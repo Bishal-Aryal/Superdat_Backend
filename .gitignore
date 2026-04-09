@@ -29,6 +29,7 @@ static_root/
 # Secrets
 .env
 .env/
+
 *.secret
 
 # VS Code
