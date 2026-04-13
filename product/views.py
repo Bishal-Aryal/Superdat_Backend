@@ -1,10 +1,13 @@
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.views import APIView
 from product.models import Product
 from product.serializers import ProductListSerializer, ProductSerializer, ReviewSerializer
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
-from rest_framework.parsers import MultiPartParser, FormParser
+from drf_spectacular.utils import extend_schema, OpenApiExample
+from backend.pagination import StandardResultsSetPagination
+from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework.filters import OrderingFilter, SearchFilter
 
 
 @extend_schema(
@@ -41,15 +44,13 @@ This endpoint is publicly accessible and does not require authentication.
         )
     ]
 )
-class ProductListView(APIView):
-    def get(self, request):
-        try:
-            products = Product.objects.all()
-            serializer = ProductListSerializer(products, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+class ProductListView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductListSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [OrderingFilter, SearchFilter, DjangoFilterBackend]
+    search_fields = ['title', 'color']
+    ordering_fields = ['price', 'quantity', 'created_at']
 
 @extend_schema(
     tags=["Products"],

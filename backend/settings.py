@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_filters",
     "rest_framework",
     "drf_spectacular",
     "product",
@@ -219,7 +220,7 @@ JAZZMIN_SETTINGS = {
     "hide_apps": ['auth'],
 
     # Hide these models when generating side menu (e.g auth.user)
-    "hide_models": ['auth.group', 'product.category', 'product.subcategory'], 
+    "hide_models": ['auth.group', 'product.category', 'product.subcategory', 'product.productimage', 'product.faqs'], 
 
     # List of apps (and/or models) to base side menu ordering off of (does not need to contain all apps/models)
     "order_with_respect_to": ["auth", "product", "product.product",],

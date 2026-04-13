@@ -1,5 +1,5 @@
 from django.contrib import admin
-from product.models import Category, SubCategory, Product
+from product.models import Category, SubCategory, Product, ProductImage, FAQS
 from django import forms
 from django.utils.html import format_html
 
@@ -47,12 +47,24 @@ class SubCategoryInline(admin.TabularInline):
     fields = ['title', 'created_at']
     max_num = 10
 
+class FAQInline(admin.TabularInline):
+    model = FAQS
+    extra = 1
+    fields = ['question', 'answer']
+    max_num = 10
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+    fields = ['image', 'caption']
+    max_num = 5
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    filter_horizontal = ('categories', 'subcategories')
-    # inlines = [CategoryInline, SubCategoryInline]
+    filter_horizontal = ('categories', 'sub_categories')
+    inlines = [ProductImageInline, FAQInline]
     list_display = ('id', 'title', 'price', 'quantity','created_at')
-    list_filter  = ('created_at','categories','subcategories')
+    list_filter  = ('created_at','categories','sub_categories')
     search_fields = ('title',)
 
 

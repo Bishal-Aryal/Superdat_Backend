@@ -19,10 +19,10 @@ class SubCategory(models.Model):
     
 class Product(models.Model):
     categories = models.ManyToManyField(Category, related_name='products_category', null=True, blank=True)
-    subcategories = models.ManyToManyField(SubCategory, related_name='products_subcategory', null=True, blank=True)
+    sub_categories = models.ManyToManyField(SubCategory, related_name='products_subcategory', null=True, blank=True)
     title = models.CharField(max_length=255)
     description = RichTextField(blank=True, null=True)
-    subdescription = RichTextField(blank=True, null=True)
+    sub_description = RichTextField(blank=True, null=True)
     color = models.CharField(max_length=50)
     quantity = models.PositiveIntegerField(null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -46,17 +46,40 @@ class Product(models.Model):
         self.average_rating = avg or 0
         self.save(update_fields=['average_rating'])
 
-# class ProductImage(models.Model):
-#     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-#     image = models.ImageField(upload_to='product/images/', null=True, blank=True)
-#     caption = models.CharField(max_length=100, null=True, blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='product/images/', null=True, blank=True)
+    caption = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-#     def clean(self):
-#         from django.core.exceptions import ValidationError
-#         if not self.image :
-#             raise ValidationError("An image must be provided.")
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if not self.image :
+            raise ValidationError("An image must be provided.")
+        
+class FAQS(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_faqs', null=True, blank=True)
+    question = RichTextField()
+    answer = RichTextField()
+    created_at =  models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "FAQS"
+        verbose_name_plural = "FAQS"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        """
+        Returns a string representation of the FAQS, which is the question and answer.
+
+        This method is called when a string representation of the object is needed.
+        For example, when printing the object, or when using it in a template.
+
+        Returns:
+            str: The question and answer of the FAQS.
+        """
+        return f"{self.question} - {self.answer}"
+ 
 class Review(models.Model):
     RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_reviews', null=True, blank=True)
