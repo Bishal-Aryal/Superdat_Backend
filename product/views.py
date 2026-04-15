@@ -1,9 +1,10 @@
+from django.core.cache import cache
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.views import APIView
-from product.models import Product
-from product.serializers import ProductListSerializer, ProductSerializer, ReviewSerializer
-from drf_spectacular.utils import extend_schema, OpenApiExample
+from product.models import Product, Category, SubCategory
+from product.serializers import ProductListSerializer, ProductSerializer, ReviewSerializer, ProductCategorySerializer, ProductSubCategorySerializer
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiParameter
 from backend.pagination import StandardResultsSetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -118,3 +119,151 @@ class ProductReviewCreateView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Product.DoesNotExist:
             return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+@extend_schema(
+    tags=["Categories"], 
+    summary="List all categories", 
+    description="Get a list of all product categories with their subcategories and products",
+    responses={200: ProductCategorySerializer(many=True)})
+class ProductCategoryListView(APIView):
+    def get(self, request):
+        
+        """
+        Get a list of all product categories with their subcategories and products.
+
+        If the data is cached, return the cached data. Otherwise, retrieve the data
+        from the database, serialize it, cache the result for 10 minutes, and
+        return the serialized data.
+
+        Returns:
+            Response: A JSON response containing a list of product categories with
+                their subcategories and products.
+        """
+        cache_key = 'product_categories_list'
+        cached_data = cache.get(cache_key)
+        
+        if cached_data:
+            return Response(cached_data, status=status.HTTP_200_OK)
+            
+        try:
+            categories = Category.objects.prefetch_related(
+                'subcategories',
+                'products_category'
+            ).all()
+            serializer = ProductCategorySerializer(categories, many=True)
+            response_data = serializer.data
+            
+            # Cache for 10 minutes
+            cache.set(cache_key, response_data, 600)
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@extend_schema(
+    tags=["Subcategories"], 
+    summary="List all subcategories", 
+    description="Get a list of all product subcategories",
+    responses={200: ProductSubCategorySerializer(many=True)})
+class ProductSubCategoryListView(APIView):
+    def get(self, request):
+        
+        """
+        Get a list of all product subcategories.
+
+        Returns:
+            Response: A JSON response containing a list of product subcategories.
+        """
+        try:
+            subcategories = SubCategory.objects.all()
+            serializer = ProductSubCategorySerializer(subcategories, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': 'Subcategories not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@extend_schema(
+    tags=["Subcategories"],
+    summary="List subcategories by category",
+    description="Retrieve all subcategories for a specific category using its ID (primary key).",
+    responses={
+        200: ProductSubCategorySerializer(many=True),
+        
+    }
+)
+class ProductSubCategoryByCategoryView(APIView):
+    def get(self, request, pk):
+        
+        """
+        Get subcategories for a specific category.
+
+        Args:
+            request (Request): The incoming request.
+            pk (int): The primary key of the category.
+
+        Returns:
+            Response: A JSON response containing a list of subcategories.
+        """
+        try:
+            category = Category.objects.get(pk=pk)
+            subcategories = category.subcategories.all()
+            serializer = ProductSubCategorySerializer(subcategories, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Category.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': 'Subcategories not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@extend_schema(
+    tags=["Products"],
+    summary="Get products by category (including subcategories)",
+    description="Retrieve all products assigned to a category and its subcategories.",
+    responses={200: ProductListSerializer(many=True)}
+)
+class ProductByCategoryView(APIView):
+    def get(self, request, pk):
+        
+        """
+        Get products assigned to a specific category, including tours from its subcategories.
+
+        Args:
+            request (Request): The incoming request.
+            pk (int): The primary key of the category.
+
+        Returns:
+            Response: A JSON response containing a list of products.
+        """
+        
+        
+        try:
+            from django.db.models import Q
+            
+            category = Category.objects.prefetch_related('subcategories').get(pk=pk)
+            
+            # Get all subcategories under this main category
+            subcategories = category.subcategories.all()
+            sub_category_category_ids = subcategories.values_list('category_id', flat=True)
+            
+            # Get products from:
+            # 1. Direct products in main category
+            # 2. Products in subcategories
+            products = Product.objects.select_related().prefetch_related(
+                'images', 
+                'product_reviews',
+                'product_faqs',
+                'sub_categories',
+                'categories'
+            ).filter(
+                Q(categories=category) |  # Direct category products
+                Q(categories__in=sub_category_category_ids)  # Subcategory products
+            ).distinct()
+            
+            serializer = ProductListSerializer(products, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Category.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
