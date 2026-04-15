@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from product.models import Product, Review, FAQS, ProductImage
+from product.models import Product, Review, FAQS, ProductImage, Category, SubCategory
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -144,7 +144,35 @@ class ProductSerializer(serializers.ModelSerializer):
             result.append({'sub_category_title':sub_category.title})
 
         return result
+
+
+class ProductSubCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubCategory
+        fields = ['id', 'title', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class ProductCategorySerializer(serializers.ModelSerializer):
+    subcategories = ProductSubCategorySerializer(many=True, read_only=True)
+    products = serializers.SerializerMethodField()
     
+    class Meta:
+        model = Category
+        fields = ['id', 'title', 'subcategories', 'products', 'created_at']
+        read_only_fields = ['id', 'created_at']
+    
+    def get_products(self, obj):
+        products = obj.products_category.all()
+        return [
+            {
+                'id': product.id,
+                'title': product.title,
+                'price': product.price,
+                'image': product.image.url if product.image else None
+            }
+            for product in products
+        ] 
 
 
 

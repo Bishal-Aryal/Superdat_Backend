@@ -220,10 +220,10 @@ JAZZMIN_SETTINGS = {
     "hide_apps": ['auth'],
 
     # Hide these models when generating side menu (e.g auth.user)
-    "hide_models": ['auth.group', 'product.category', 'product.subcategory', 'product.productimage', 'product.faqs'], 
+    "hide_models": ['auth.group', 'product.productimage', 'product.faqs'], 
 
     # List of apps (and/or models) to base side menu ordering off of (does not need to contain all apps/models)
-    "order_with_respect_to": ["auth", "product", "product.product",],
+    "order_with_respect_to": ["auth", "product", 'product.category', 'product.subcategory', "product.product",],
 
     # Custom links to append to app groups, keyed on app name
     # "custom_links": {
@@ -349,11 +349,14 @@ USE_I18N = True
 
 USE_TZ = True
 
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
