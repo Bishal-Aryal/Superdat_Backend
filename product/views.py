@@ -1,9 +1,10 @@
+from django.db.models import F
 from django.core.cache import cache
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.views import APIView
-from product.models import Product, Category, SubCategory
-from product.serializers import ProductListSerializer, ProductSerializer, ReviewSerializer, ProductCategorySerializer, ProductSubCategorySerializer
+from product.models import Product, Category, SubCategory, HeroCarousel
+from product.serializers import ProductListSerializer, ProductSerializer, ReviewSerializer, ProductCategorySerializer, ProductSubCategorySerializer, HeroCarouselSerializer
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiParameter
 from backend.pagination import StandardResultsSetPagination
 from django_filters.rest_framework import DjangoFilterBackend
@@ -267,3 +268,57 @@ class ProductByCategoryView(APIView):
             return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
+        
+@extend_schema(
+    tags=["Hero Carousel"],
+    summary="List Hero Carousel items",
+    description="Retrieve a list of all hero carousel items for the homepage display.",
+    responses={200: HeroCarouselSerializer(many=True)}
+)
+class HeroCarouselListView(generics.ListAPIView):
+    queryset = HeroCarousel.objects.all()
+    serializer_class = HeroCarouselSerializer
+
+
+@extend_schema(
+    tags=["Products"],
+    summary="Get popular products",
+    description="Retrieve top 10 products sorted by highest average rating.",
+    responses={200: ProductListSerializer(many=True)}
+)
+class PopularProductsView(generics.ListAPIView):
+    queryset = Product.objects.order_by(F('average_rating').desc(nulls_last=True))[:10]
+    serializer_class = ProductListSerializer
+
+
+@extend_schema(
+    tags=["Products"],
+    summary="Get latest products",
+    description="Retrieve the 10 most recently created products.",
+    responses={200: ProductListSerializer(many=True)}
+)
+class LatestProductsView(generics.ListAPIView):
+    queryset = Product.objects.order_by('-created_at')[:10]
+    serializer_class = ProductListSerializer
+
+
+@extend_schema(
+    tags=["Products"],
+    summary="Get popular products by category",
+    description="Retrieve top 10 highest-rated products for a specific category.",
+    responses={
+        200: ProductListSerializer(many=True),
+        404: {"type": "object", "properties": {"error": {"type": "string"}}}
+    }
+)
+class PopularProductsByCategoryView(APIView):
+    def get(self, request, pk):
+        try:
+            category = Category.objects.get(pk=pk)
+            products = Product.objects.filter(categories=category).order_by(F('average_rating').desc(nulls_last=True))[:10]
+            serializer = ProductListSerializer(products, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Category.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

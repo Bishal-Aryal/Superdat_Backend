@@ -1,5 +1,13 @@
 from django.contrib import admin
-from product.models import Category, SubCategory, Product, ProductImage, FAQS
+from product.models import (
+    Category, 
+    SubCategory, 
+    Product, 
+    ProductImage, 
+    FAQS,
+    HeroCarousel,
+    ProductColor
+    )
 from django import forms
 from django.utils.html import format_html
 
@@ -59,10 +67,16 @@ class ProductImageInline(admin.TabularInline):
     fields = ['image', 'caption']
     max_num = 5
 
+class ProductColorInline(admin.TabularInline):
+    model = ProductColor
+    extra = 1
+    fields = ['name', 'hex_code']
+    max_num = 5
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     filter_horizontal = ('categories', 'sub_categories')
-    inlines = [ProductImageInline, FAQInline]
+    inlines = [ProductImageInline,ProductColorInline, FAQInline]
     list_display = ('id', 'title', 'price', 'quantity','created_at')
     list_filter  = ('created_at','categories','sub_categories')
     search_fields = ('title',)
@@ -77,3 +91,9 @@ class CategoryAdmin(admin.ModelAdmin):
 class SubCategoryAdmin(admin.ModelAdmin):
     list_display = ['id', 'category', 'title', 'created_at']
     list_filter = ('created_at',)
+
+@admin.register(HeroCarousel)
+class HeroCarouselAdmin(admin.ModelAdmin):
+    list_display = ['id', 'title', 'created_at']
+    list_filter = ('created_at',)
+
