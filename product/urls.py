@@ -1,5 +1,17 @@
 from django.urls import path
-from product.views import ProductListView, ProductDetailView, ProductReviewCreateView, ProductCategoryListView, ProductSubCategoryListView, ProductSubCategoryByCategoryView, ProductByCategoryView
+from product.views import (
+    ProductListView, 
+    ProductDetailView, 
+    ProductReviewCreateView, 
+    ProductCategoryListView, 
+    ProductSubCategoryListView, 
+    ProductSubCategoryByCategoryView, 
+    ProductByCategoryView,
+    HeroCarouselListView,
+    PopularProductsView,
+    LatestProductsView,
+    PopularProductsByCategoryView
+    )
 
 urlpatterns = [
     path('products/', ProductListView.as_view(), name='product-list'),
@@ -9,4 +21,8 @@ urlpatterns = [
     path('subcategories/', ProductSubCategoryListView.as_view(), name='subcategory-list'),
     path('subcategories/<int:pk>/', ProductSubCategoryByCategoryView.as_view(), name='subcategory-by-category'),
     path('category/<int:pk>/products/', ProductByCategoryView.as_view(), name='packages-by-direct-category'),
+    path('hero-carousel/', HeroCarouselListView.as_view(), name='hero-carousel-list'),
+    path('products/popular/', PopularProductsView.as_view(), name='popular-products'),
+    path('products/latest/', LatestProductsView.as_view(), name='latest-products'),
+    path('products/popular/category/<int:pk>/', PopularProductsByCategoryView.as_view(), name='popular-products-by-category'),
 ]

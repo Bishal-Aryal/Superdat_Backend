@@ -1,5 +1,14 @@
 from rest_framework import serializers
-from product.models import Product, Review, FAQS, ProductImage, Category, SubCategory
+from product.models import (
+    Product, 
+    Review, 
+    FAQS, 
+    ProductImage, 
+    Category, 
+    SubCategory, 
+    HeroCarousel,
+    ProductColor 
+)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -35,12 +44,18 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ['id', 'image', 'caption', 'created_at']
         read_only_fields = ['id', 'created_at']
 
+class ProductColorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductColor
+        fields = ['id', 'name', 'hex_code']
+        read_only_fields = ['id']
+
 class ProductListSerializer(serializers.ModelSerializer):
     categories = serializers.SerializerMethodField()
     sub_categories = serializers.SerializerMethodField()
     class Meta:
         model = Product
-        fields = ['id' ,'categories', 'sub_categories', 'title', 'description', 'sub_description', 'image', 'color', 'quantity', 'price', 'average_rating', 'created_at']
+        fields = ['id' ,'categories', 'sub_categories', 'title', 'description', 'sub_description', 'image', 'quantity', 'price', 'average_rating', 'created_at']
         read_only_fields = ['id', 'average_rating', 'created_at']
 
     def get_categories(self, obj):
@@ -61,11 +76,12 @@ class ProductSerializer(serializers.ModelSerializer):
     additional_images = ProductImageSerializer(many=True, read_only=True, source='images')
     faqs = FAQSerializer(many=True, read_only=True, source='product_faqs')
     reviews = ReviewSerializer(many=True, read_only=True, source= 'product_reviews')
+    colors = ProductColorSerializer(many=True, read_only=True, source='product_colors')
     categories = serializers.SerializerMethodField()
     sub_categories = serializers.SerializerMethodField()
     class Meta:
         model = Product
-        fields = ['id' , 'categories', 'sub_categories','title', 'description', 'sub_description', 'color', 'image', 'additional_images', 'faqs', 'quantity', 'price', 'average_rating', 'reviews', 'created_at']
+        fields = ['id' , 'categories', 'sub_categories','title', 'description', 'sub_description', 'colors', 'image', 'additional_images', 'faqs', 'quantity', 'price', 'average_rating', 'reviews', 'created_at']
         read_only_fields = ['id', 'average_rating', 'created_at']
 
 
@@ -174,6 +190,12 @@ class ProductCategorySerializer(serializers.ModelSerializer):
             for product in products
         ] 
 
+
+class HeroCarouselSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HeroCarousel
+        fields = ['id', 'title', 'description', 'image', 'created_at']
+        read_only_fields = ['id', 'created_at']
 
 
 

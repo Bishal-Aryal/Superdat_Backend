@@ -23,7 +23,6 @@ class Product(models.Model):
     title = models.CharField(max_length=255)
     description = RichTextField(blank=True, null=True)
     sub_description = RichTextField(blank=True, null=True)
-    color = models.CharField(max_length=50)
     quantity = models.PositiveIntegerField(null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     average_rating = models.FloatField(null=True, blank=True)
@@ -56,6 +55,14 @@ class ProductImage(models.Model):
         from django.core.exceptions import ValidationError
         if not self.image :
             raise ValidationError("An image must be provided.")
+
+class ProductColor(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='Product_colors')
+    name = models.CharField(max_length=50)
+    hex_code = models.CharField(max_length=7)
+
+    def __str__(self):
+        return self.name
         
 class FAQS(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_faqs', null=True, blank=True)
@@ -85,7 +92,7 @@ class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_reviews', null=True, blank=True)
     name = models.CharField(max_length=255)
     email = models.EmailField()
-    image = models.ImageField(upload_to="media/review/image", null=True, blank=True)
+    image = models.ImageField(upload_to="review/image", null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
     rating = models.IntegerField(choices=RATING_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -142,3 +149,13 @@ class Review(models.Model):
         super().delete(*args, **kwargs)
         if self.product and hasattr(self.product, 'update_average_rating'):
             self.product.update_average_rating()
+        
+
+class HeroCarousel(models.Model):
+    title = models.CharField(max_length=255)
+    description = RichTextField(blank=True, null=True)
+    image = models.ImageField(upload_to="hero/carousel/image", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
