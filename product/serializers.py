@@ -24,6 +24,12 @@ class ReviewSerializer(serializers.ModelSerializer):
             'created_at',
         ]
         read_only_fields = ['id', 'created_at']
+    
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
 class FAQSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,7 +61,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     sub_categories = serializers.SerializerMethodField()
     class Meta:
         model = Product
-        fields = ['id' ,'categories', 'sub_categories', 'title', 'description', 'sub_description', 'image', 'quantity', 'price', 'average_rating', 'created_at']
+        fields = ['id' ,'categories', 'sub_categories', 'title', 'description', 'sub_description', 'image', 'quantity', 'price', 'average_rating', 'hot_deal', 'created_at']
         read_only_fields = ['id', 'average_rating', 'created_at']
 
     def get_categories(self, obj):
@@ -81,7 +87,7 @@ class ProductSerializer(serializers.ModelSerializer):
     sub_categories = serializers.SerializerMethodField()
     class Meta:
         model = Product
-        fields = ['id' , 'categories', 'sub_categories','title', 'description', 'sub_description', 'colors', 'image', 'additional_images', 'faqs', 'quantity', 'price', 'average_rating', 'reviews', 'created_at']
+        fields = ['id' , 'categories', 'sub_categories','title', 'description', 'sub_description', 'colors', 'image', 'additional_images', 'faqs', 'quantity', 'price', 'hot_deal', 'average_rating', 'reviews', 'created_at']
         read_only_fields = ['id', 'average_rating', 'created_at']
 
 
@@ -116,6 +122,12 @@ class ProductSerializer(serializers.ModelSerializer):
                     "Only JPEG, JPG and PNG files are allowed"
                 )
             
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_absolute_uri(obj.image.url)
+        return None
+    
     def validate_additional_images(self, value):
         """
         Validates the additional images for size and format.

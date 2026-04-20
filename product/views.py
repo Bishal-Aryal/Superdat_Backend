@@ -91,7 +91,7 @@ class ProductDetailView(APIView):
     def get(self, request, pk):
         try:
             product = Product.objects.get(pk=pk)
-            serializer = ProductSerializer(product)
+            serializer = ProductSerializer(product, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Product.DoesNotExist:
             return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -262,7 +262,7 @@ class ProductByCategoryView(APIView):
                 Q(categories__in=sub_category_category_ids)  # Subcategory products
             ).distinct()
             
-            serializer = ProductListSerializer(products, many=True)
+            serializer = ProductListSerializer(products, many=True, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Category.DoesNotExist:
             return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)

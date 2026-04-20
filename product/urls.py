@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from product.views import (
     ProductListView, 
     ProductDetailView, 
@@ -15,7 +15,7 @@ from product.views import (
 
 urlpatterns = [
     path('products/', ProductListView.as_view(), name='product-list'),
-    path('product/<int:pk>/', ProductDetailView.as_view(), name='product-detail'),
+    path('show/<int:pk>/', ProductDetailView.as_view(), name='product-detail'),
     path('review/create/<int:pk>/', ProductReviewCreateView.as_view(), name='product-review-create'),
     path('categories/', ProductCategoryListView.as_view(), name='category-list'),
     path('subcategories/', ProductSubCategoryListView.as_view(), name='subcategory-list'),
@@ -25,4 +25,6 @@ urlpatterns = [
     path('products/popular/', PopularProductsView.as_view(), name='popular-products'),
     path('products/latest/', LatestProductsView.as_view(), name='latest-products'),
     path('products/popular/category/<int:pk>/', PopularProductsByCategoryView.as_view(), name='popular-products-by-category'),
+    path('cart/', include('product.submodules.cart.urls')),
+    # path('order/', include('product.submodules.order.urls')),
 ]

@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     "product",
-    "order",
     "ckeditor",
     "corsheaders",
 
