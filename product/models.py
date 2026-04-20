@@ -27,6 +27,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     average_rating = models.FloatField(null=True, blank=True)
     image = models.ImageField(upload_to="product/image", null=True, blank=True)
+    hot_deal = models.BooleanField(default=False, )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
