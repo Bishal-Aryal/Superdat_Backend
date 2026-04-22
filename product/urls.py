@@ -7,10 +7,11 @@ from product.views import (
     ProductSubCategoryListView, 
     ProductSubCategoryByCategoryView, 
     ProductByCategoryView,
+    ProductBySubCategoryView,
     HeroCarouselListView,
     PopularProductsView,
     LatestProductsView,
-    PopularProductsByCategoryView
+    PopularProductsByCategoryView,
     )
 
 urlpatterns = [
@@ -21,6 +22,7 @@ urlpatterns = [
     path('subcategories/', ProductSubCategoryListView.as_view(), name='subcategory-list'),
     path('subcategories/<int:pk>/', ProductSubCategoryByCategoryView.as_view(), name='subcategory-by-category'),
     path('category/<int:pk>/products/', ProductByCategoryView.as_view(), name='packages-by-direct-category'),
+    path('subcategory/<int:pk>/products/', ProductBySubCategoryView.as_view(), name='packages-by-direct-category'),
     path('hero-carousel/', HeroCarouselListView.as_view(), name='hero-carousel-list'),
     path('products/popular/', PopularProductsView.as_view(), name='popular-products'),
     path('products/latest/', LatestProductsView.as_view(), name='latest-products'),

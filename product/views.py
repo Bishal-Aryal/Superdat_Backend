@@ -270,6 +270,49 @@ class ProductByCategoryView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
         
 @extend_schema(
+    tags=["Products"],
+    summary="Get products by sub-category ",
+    description="Retrieve all products assigned to a subcategory",
+    responses={200: ProductListSerializer(many=True)}
+)
+class ProductBySubCategoryView(APIView):
+    def get(self, request, pk):
+        
+        """
+        Get products assigned to a specific category, including tours from its subcategories.
+
+        Args:
+            request (Request): The incoming request.
+            pk (int): The primary key of the category.
+
+        Returns:
+            Response: A JSON response containing a list of products.
+        """
+        
+        
+        try:
+            from django.db.models import Q
+            
+            subcategory = SubCategory.objects.get(pk=pk)
+            
+            products = Product.objects.select_related().prefetch_related(
+                'images', 
+                'product_reviews',
+                'product_faqs',
+                'sub_categories',
+                'categories'
+            ).filter(
+                sub_categories=subcategory  # Subcategory products
+            ).distinct()
+            
+            serializer = ProductListSerializer(products, many=True, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except SubCategory.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
+        
+@extend_schema(
     tags=["Hero Carousel"],
     summary="List Hero Carousel items",
     description="Retrieve a list of all hero carousel items for the homepage display.",
@@ -289,6 +332,7 @@ class HeroCarouselListView(generics.ListAPIView):
 class PopularProductsView(generics.ListAPIView):
     queryset = Product.objects.order_by(F('average_rating').desc(nulls_last=True))[:10]
     serializer_class = ProductListSerializer
+    pagination_class = None  # Disable pagination for this view
 
 
 @extend_schema(
@@ -300,7 +344,7 @@ class PopularProductsView(generics.ListAPIView):
 class LatestProductsView(generics.ListAPIView):
     queryset = Product.objects.order_by('-created_at')[:10]
     serializer_class = ProductListSerializer
-
+    pagination_class = None  # Disable pagination for this view
 
 @extend_schema(
     tags=["Products"],
