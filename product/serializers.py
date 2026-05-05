@@ -57,11 +57,12 @@ class ProductColorSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 class ProductListSerializer(serializers.ModelSerializer):
+    final_price = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
     sub_categories = serializers.SerializerMethodField()
     class Meta:
         model = Product
-        fields = ['id' ,'categories', 'sub_categories', 'title', 'description', 'sub_description', 'image', 'quantity', 'price', 'average_rating', 'hot_deal', 'created_at']
+        fields = ['id' ,'categories', 'sub_categories', 'title', 'description', 'sub_description', 'image', 'quantity', 'price', 'discount_per', 'final_price', 'average_rating', 'hot_deal', 'created_at']
         read_only_fields = ['id', 'average_rating', 'created_at']
 
     def get_categories(self, obj):
@@ -77,17 +78,25 @@ class ProductListSerializer(serializers.ModelSerializer):
             result.append({'sub_category_title':sub_category.title})
 
         return result
+    
+    def get_final_price(self, obj):
+        if obj.discount_per:
+            discount_amount = (obj.price * obj.discount_per) / 100
+            final_price = obj.price - discount_amount
+            return round(final_price, 2)
+        return obj.price
 
 class ProductSerializer(serializers.ModelSerializer):    
     additional_images = ProductImageSerializer(many=True, read_only=True, source='images')
     faqs = FAQSerializer(many=True, read_only=True, source='product_faqs')
     reviews = ReviewSerializer(many=True, read_only=True, source= 'product_reviews')
     colors = ProductColorSerializer(many=True, read_only=True, source='product_colors')
+    final_price = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
     sub_categories = serializers.SerializerMethodField()
     class Meta:
         model = Product
-        fields = ['id' , 'categories', 'sub_categories','title', 'description', 'sub_description', 'colors', 'image', 'additional_images', 'faqs', 'quantity', 'price', 'hot_deal', 'average_rating', 'reviews', 'created_at']
+        fields = ['id' , 'categories', 'sub_categories','title', 'description', 'sub_description', 'colors', 'image', 'additional_images', 'faqs', 'quantity', 'price', 'discount_per', 'final_price','hot_deal', 'average_rating', 'reviews', 'created_at']
         read_only_fields = ['id', 'average_rating', 'created_at']
 
 
@@ -172,6 +181,13 @@ class ProductSerializer(serializers.ModelSerializer):
             result.append({'sub_category_title':sub_category.title})
 
         return result
+    
+    def get_final_price(self, obj):
+        if obj.discount_per:
+            discount_amount = (obj.price * obj.discount_per) / 100
+            final_price = obj.price - discount_amount
+            return round(final_price, 2)
+        return obj.price
 
 
 class ProductSubCategorySerializer(serializers.ModelSerializer):

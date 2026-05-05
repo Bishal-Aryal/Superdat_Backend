@@ -25,6 +25,7 @@ class Product(models.Model):
     sub_description = RichTextField(blank=True, null=True)
     quantity = models.PositiveIntegerField(null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_per = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     average_rating = models.FloatField(null=True, blank=True)
     image = models.ImageField(upload_to="product/image", null=True, blank=True)
     hot_deal = models.BooleanField(default=False, )
@@ -48,7 +49,7 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='product/images/', null=True, blank=True)
+    image = models.ImageField(upload_to='product/image', null=True, blank=True)
     caption = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

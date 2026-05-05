@@ -53,6 +53,12 @@ class ProductListView(generics.ListAPIView):
     filter_backends = [OrderingFilter, SearchFilter, DjangoFilterBackend]
     search_fields = ['title', 'color']
     ordering_fields = ['price', 'quantity', 'created_at']
+    filterset_fields = {
+    'price': ['exact', 'gte', 'lte'],
+    'quantity': ['exact', 'gte', 'lte'],
+    'categories': ['exact'],
+    'hot_deal': ['exact'],
+}
 
 @extend_schema(
     tags=["Products"],
