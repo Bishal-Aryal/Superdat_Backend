@@ -77,7 +77,7 @@ class ProductColorInline(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin):
     filter_horizontal = ('categories', 'sub_categories')
     inlines = [ProductImageInline,ProductColorInline, FAQInline]
-    list_display = ('id', 'title', 'price', 'quantity','created_at')
+    list_display = ('id', 'title', 'price', 'quantity','created_at', 'hot_deal')
     list_filter  = ('created_at','categories','sub_categories')
     search_fields = ('title',)
 
