@@ -51,7 +51,7 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductListSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [OrderingFilter, SearchFilter, DjangoFilterBackend]
-    search_fields = ['title', 'color']
+    search_fields = ['title']
     ordering_fields = ['price', 'quantity', 'created_at']
     filterset_fields = {
     'price': ['exact', 'gte', 'lte'],
