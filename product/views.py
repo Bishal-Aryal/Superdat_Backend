@@ -185,7 +185,7 @@ class ProductSubCategoryListView(APIView):
         """
         try:
             subcategories = SubCategory.objects.all()
-            serializer = ProductSubCategorySerializer(subcategories, many=True)
+            serializer = ProductSubCategorySerializer(subcategories, many=True,context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': 'Subcategories not found'}, status=status.HTTP_404_NOT_FOUND)
