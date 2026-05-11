@@ -193,8 +193,14 @@ class ProductSerializer(serializers.ModelSerializer):
 class ProductSubCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = SubCategory
-        fields = ['id', 'title', 'created_at']
+        fields = ['id', 'title', 'image','created_at']
         read_only_fields = ['id', 'created_at']
+    
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
