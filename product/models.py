@@ -12,6 +12,7 @@ class Category(models.Model):
 class SubCategory(models.Model):
     title = models.CharField(max_length=255)
     category = models.ForeignKey(Category, related_name='subcategories', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to="subcategory/image", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

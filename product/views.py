@@ -372,3 +372,15 @@ class PopularProductsByCategoryView(APIView):
             return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+@extend_schema(
+    tags=["Products"],
+    summary="Get hot deal products",
+    description="Retrieve all products marked as hot deals.",
+    responses={200: ProductListSerializer(many=True)}
+)
+class ProductHotDealListView(generics.ListAPIView):
+    queryset = Product.objects.filter(hot_deal=True)
+    serializer_class = ProductListSerializer
+    pagination_class = None  # Disable pagination for this view
